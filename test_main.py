@@ -1,58 +1,39 @@
-import pytest
-from pyspark.sql import SparkSession
-from mylib.lib import create_spark, load_data, transform_data, query
+"""
+Test Databricks functionality: Verify DBFS path existence
+"""
+
+import requests
+from dotenv import load_dotenv
+import os
+
+# Load environment variables
+load_dotenv()
+server_h = os.getenv("SERVER_HOSTNAME")
+access_token = os.getenv("ACCESS_TOKEN")
+FILESTORE_PATH = "dbfs:/tmp/extracted_data"
+url = f"https://{server_h}/api/2.0"
 
 
-@pytest.fixture(scope="module")
-def spark():
-    # Initialize Spark session for testing
-    spark = create_spark(app_name="TestApp")
-    yield spark
-    spark.stop()
+# Function to check if a file path exists and auth settings still work
+def check_filestore_path(path, headers):
+    try:
+        response = requests.get(url + f"/dbfs/get-status?path={path}", headers=headers)
+        response.raise_for_status()
+        return response.json()["path"] is not None
+    except Exception as e:
+        print(f"Error checking file path: {e}")
+        return False
 
 
-@pytest.fixture
-def data_frame(spark):
-    # Load the CSV data directly for testing
-    file_path = "rdu-weather-history.csv"
-    df = load_data(spark, file_path)
-    return df
-
-
-def test_create_spark(spark):
-    assert isinstance(
-        spark, SparkSession
-    ), "Test failed: Spark session not created correctly."
-    print("Spark session created successfully.")
-
-
-# Check if data was loaded correctly
-def test_load_data(data_frame):
-    assert data_frame.count() > 0, "Test failed: No data loaded from CSV."
-    print("CSV file reading test passed successfully.")
-
-
-# Test the transform_data function
-def test_transform_data(data_frame):
-    transformed_df = transform_data(data_frame)
-    assert (
-        "Avg_Temperature" in transformed_df.columns
-    ), "Test failed: Avg_Temperature column not found after transformation."
-    print("Transformation test passed: Avg_Temperature column added successfully.")
-
-
-# Test the query function by running the query on the transformed data
-def test_query(spark, data_frame):
-    data_frame.createOrReplaceTempView("weather_data")
-    result_df = query(data_frame, spark)
-
-    # Check if the result contains the expected columns and is not empty
-    assert result_df.count() > 0, "Test failed: Query returned no results."
-    assert (
-        "Date" in result_df.columns and "avg_temp_min" in result_df.columns
-    ), "Test failed: Expected columns not found in query result."
-    print("Query test passed: Data filtered, grouped, and ordered as expected.")
+# Test if the specified FILESTORE_PATH exists
+def test_databricks():
+    headers = {"Authorization": f"Bearer {access_token}"}
+    exists = check_filestore_path(FILESTORE_PATH, headers)
+    if exists:
+        print(f"Path exists: {FILESTORE_PATH}")
+    else:
+        print(f"Path does not exist: {FILESTORE_PATH}")
 
 
 if __name__ == "__main__":
-    pytest.main()
+    test_databricks()

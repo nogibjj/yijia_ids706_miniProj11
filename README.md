@@ -1,49 +1,84 @@
-# yijia_ids706_miniProj10
+# **yijia_ids706_miniProj11**
 
-## Python Template
-This project uses Python and PySpark to perform data processing and analysis on a large dataset of weather data. The main objectives are to incorporate a Spark SQL query and execute a data transformation.
+## **Overview**
+This project demonstrates a **Databricks pipeline** for managing and analyzing weather data using **Spark**. It consists of three sequential steps:
+1. **Extract**: Reads raw data from a publicly hosted CSV file.
+2. **Transform**: Calculates average temperatures for each row and saves the results in Delta format.
+3. **Query**: Filters and groups the transformed data based on specified conditions.
 
-## CI/CD Badge
-[![CI](https://github.com/nogibjj/yijia_ids706_miniProj10/actions/workflows/cicd.yml/badge.svg)](https://github.com/nogibjj/yijia_ids706_miniProj10/actions/workflows/cicd.yml)
+The pipeline workflow is automated using **Databricks Jobs**, with **CI/CD processes** implemented via GitHub Actions.
 
-## File Structure
-- **`.devcontainer/`**: Contains the development container configuration (`devcontainer.json` and a Dockerfile) to ensure a consistent development environment.
-- **`Makefile`**: Provides commands for setup, testing, linting, and formatting the project.
-- **`.github/workflows/`**: Contains CI/CD workflows for GitHub, which trigger actions like setup, linting, and testing when code is pushed to the repository.
-- **`rdu-weather-history.csv`**: Weather data for the Durham region.
-- **`output_summary.md`**: A generated summary log, documenting the output of SQL queries and transformations performed during the data processing steps.
+---
 
-## Setup
+## **CI/CD Badge**
 
-### 1. Clone the Repository
-```bash
-git clone git@github.com:nogibjj/yijia_ids706_miniProj10.git
-```
 
-### 2. Open the Repository in GitHub Codespace
-- Open the project in a GitHub Codespace and configure it to use the .devcontainer setup.
-- Rebuild the container if necessary, ensuring Docker is running on your computer.
+---
 
-### 3. Install dependencies
-Run the following command to install all required dependencies:
+## **Databricks Setup**
+Follow these steps to set up the pipeline in Databricks:
 
-```bash
-make install
-```
+### **1. Setting Up a Cluster**
+1. Navigate to the **Compute** section in Databricks.
+2. Click **Create Cluster** and configure it with the default settings.
+3. Start the cluster.
 
-## Usage
-- make install: Installs dependencies specified in requirements.txt.
-- make format: Formats Python files using Black.
-- make lint: Lints Python files using Pylint, ignoring specific patterns.
-- make test: Runs tests using pytest and generates a coverage report.
+### **2. Connecting to GitHub**
+1. Navigate to the **Workspace** tab.
+2. Create a new Git folder and link it to the repository:
+`https://github.com/nogibjj/yijia_ids706_miniProj11.git`
 
-## Data Transformation and PySpark SQL Query Summary
 
-- Data Transformation: Create an Avg_Temperature column by averaging the Temperature Minimum and Temperature Maximum values for each row, simplifying temperature analysis.
+### **3. Installing Required Libraries**
+No additional libraries need to be installed because:
+- `pyspark` is pre-installed in Databricks clusters.
+- Other libraries like `databricks-sql-connector` and `python-dotenv` are **not required** for this pipeline as it processes Delta tables and does not load `.env` files.
 
-- PySpark SQL Query: Filters days with Temperature Maximum over 75, groups data by date, and calculates the average of Temperature Minimum for each date, ordering the results by highest average minimum temperature. This setup focuses analysis on warmer days, providing key insights into temperature trends.
+### **4. Creating Jobs**
+1. Go to the **Jobs** tab in Databricks and create the following jobs:
+- **Extract**: Runs the `extract.py` script.
+- **Transform**: Runs the `transform_load.py` script.
+- **Query**: Runs the `query.py` script.
+2. Set task dependencies:
+- **Transform** depends on **Extract**.
+- **Query** depends on **Transform**.
 
-## CI/CD Setup
-- Location: .github/workflows/
-- Description: Contains GitHub Actions workflows for CI/CD, which automatically run setup, linting, testing, and generate and push the log file when code is pushed to the repository.
+---
 
+## **Data Source and Sink**
+
+### **Data Source**
+The pipeline uses a publicly accessible CSV file as its data source:
+- URL: [`rdu-weather-history.csv`](https://raw.githubusercontent.com/nogibjj/yijia_ids706_miniProj3/refs/heads/main/rdu-weather-history.csv)
+
+### **Data Sink**
+The outputs of each pipeline stage are saved in Delta format for scalability and efficiency:
+1. **Extracted Data**: Saved at `/dbfs/tmp/extracted_data`.
+2. **Transformed Data**: Saved at `/dbfs/tmp/transformed_data`.
+
+---
+
+## **Pipeline Workflow**
+This pipeline implements an **ETL (Extract, Transform, Load)** process to analyze weather data using Python and PySpark:
+1. **Extract**: Retrieves data from the source URL and saves it in Delta format at `/dbfs/tmp/extracted_data`.
+2. **Transform**: Calculates the average temperature for each row and saves the transformed data in Delta format at `/dbfs/tmp/transformed_data`.
+3. **Query**: Executes SQL queries on the transformed data to filter and group results.
+
+Each step is executed in sequence, with downstream tasks depending on the successful completion of upstream tasks to ensure data consistency.
+
+---
+
+## **CI/CD Setup**
+
+### **Workflow Configuration**
+The pipeline is automated using GitHub Actions to ensure reliable and repeatable deployment. The CI/CD workflow performs the following tasks:
+1. Installs dependencies to ensure compatibility.
+2. Lints and formats the code to maintain consistency.
+3. Runs tests to validate functionality.
+4. Sets up environment variables for secure connection to Databricks.
+
+### **Environment Setup in GitHub**
+To set up secrets for secure access to Databricks:
+1. Go to your GitHub repository.
+2. Navigate to Settings > Secrets and variables > Actions.
+3. Add the following secrets: SERVER_HOSTNAME, HTTP_PATH, ACCESS_TOKEN.

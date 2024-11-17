@@ -6,10 +6,11 @@ def create_spark(app_name):
     return spark
 
 def transform_data(df):
-    # Calculate the average of "Temperature Minimum" and "Temperature Maximum" for each row
+    # Calculate the average of "Temperature Minimum" and "Temperature Maximum" 
     df = df.withColumn(
         "Avg_Temperature",
-        ((col("Temperature Minimum").cast("float") + col("Temperature Maximum").cast("float")) / 2)
+        ((col("Temperature Minimum").cast("float") + col("Temperature Maximum")
+          .cast("float")) / 2)
     )
     return df
 
