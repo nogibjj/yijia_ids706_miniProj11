@@ -8,12 +8,10 @@ This project demonstrates a **Databricks pipeline** for managing and analyzing w
 
 The pipeline workflow is automated using **Databricks Jobs**, with **CI/CD processes** implemented via GitHub Actions.
 
----
 
 ## **CI/CD Badge**
 
-
----
+[![CI](https://github.com/nogibjj/yijia_ids706_miniProj11/actions/workflows/cicd.yml/badge.svg)](https://github.com/nogibjj/yijia_ids706_miniProj11/actions/workflows/cicd.yml)
 
 ## **Databricks Setup**
 Follow these steps to set up the pipeline in Databricks:
@@ -28,11 +26,8 @@ Follow these steps to set up the pipeline in Databricks:
 2. Create a new Git folder and link it to the repository:
 `https://github.com/nogibjj/yijia_ids706_miniProj11.git`
 
-
 ### **3. Installing Required Libraries**
-No additional libraries need to be installed because:
 - `pyspark` is pre-installed in Databricks clusters.
-- Other libraries like `databricks-sql-connector` and `python-dotenv` are **not required** for this pipeline as it processes Delta tables and does not load `.env` files.
 
 ### **4. Creating Jobs**
 1. Go to the **Jobs** tab in Databricks and create the following jobs:
@@ -43,7 +38,6 @@ No additional libraries need to be installed because:
 - **Transform** depends on **Extract**.
 - **Query** depends on **Transform**.
 
----
 
 ## **Data Source and Sink**
 
@@ -56,17 +50,15 @@ The outputs of each pipeline stage are saved in Delta format for scalability and
 1. **Extracted Data**: Saved at `/dbfs/tmp/extracted_data`.
 2. **Transformed Data**: Saved at `/dbfs/tmp/transformed_data`.
 
----
 
 ## **Pipeline Workflow**
+![Pipeline Overview](images/pipeline.png)
 This pipeline implements an **ETL (Extract, Transform, Load)** process to analyze weather data using Python and PySpark:
 1. **Extract**: Retrieves data from the source URL and saves it in Delta format at `/dbfs/tmp/extracted_data`.
 2. **Transform**: Calculates the average temperature for each row and saves the transformed data in Delta format at `/dbfs/tmp/transformed_data`.
 3. **Query**: Executes SQL queries on the transformed data to filter and group results.
 
 Each step is executed in sequence, with downstream tasks depending on the successful completion of upstream tasks to ensure data consistency.
-
----
 
 ## **CI/CD Setup**
 
