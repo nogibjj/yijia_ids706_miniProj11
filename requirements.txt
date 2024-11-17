@@ -8,3 +8,5 @@ pandas
 pytest-mock
 pyspark
 
+databricks-sql-connector
+python-dotenv
